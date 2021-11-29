@@ -25,7 +25,7 @@ cached_type = None
 
 def get_train_embeds(model, size, defect_type, transform, device):
     # train data / train kde
-    test_data = MVTecAT("Data", defect_type, size, transform=transform, mode="train")
+    test_data = MVTecAT("data", defect_type, size, transform=transform, mode="train")
 
     dataloader_train = DataLoader(test_data, batch_size=64,
                             shuffle=False, num_workers=0)
@@ -33,7 +33,6 @@ def get_train_embeds(model, size, defect_type, transform, device):
     with torch.no_grad():
         for x in dataloader_train:
             embed, logit = model(x.to(device))
-
             train_embed.append(embed.cpu())
     train_embed = torch.cat(train_embed)
     return train_embed
