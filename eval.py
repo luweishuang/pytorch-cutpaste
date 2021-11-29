@@ -26,9 +26,7 @@ cached_type = None
 def get_train_embeds(model, size, defect_type, transform, device):
     # train data / train kde
     test_data = MVTecAT("data", defect_type, size, transform=transform, mode="train")
-
-    dataloader_train = DataLoader(test_data, batch_size=64,
-                            shuffle=False, num_workers=0)
+    dataloader_train = DataLoader(test_data, batch_size=64, shuffle=False, num_workers=0)
     train_embed = []
     with torch.no_grad():
         for x in dataloader_train:
@@ -40,17 +38,16 @@ def get_train_embeds(model, size, defect_type, transform, device):
 
 def eval_model(modelname, defect_type, device="cpu", save_plots=False, size=256, show_training_data=True, model=None, train_embed=None, head_layer=8, density=GaussianDensityTorch()):
     # create test dataset
-    global test_data_eval,test_transform, cached_type
+    global test_data_eval, test_transform, cached_type
 
     # TODO: cache is only nice during training. do we need it?
     if test_data_eval is None or cached_type != defect_type:
         cached_type = defect_type
         test_transform = transforms.Compose([])
-        test_transform.transforms.append(transforms.Resize((size,size)))
+        test_transform.transforms.append(transforms.Resize((size, size)))
         test_transform.transforms.append(transforms.ToTensor())
-        test_transform.transforms.append(transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                                            std=[0.229, 0.224, 0.225]))
-        test_data_eval = MVTecAT("data", defect_type, size, transform = test_transform, mode="test")
+        test_transform.transforms.append(transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+        test_data_eval = MVTecAT("data", defect_type, size, transform=test_transform, mode="test")
 
     dataloader_test = DataLoader(test_data_eval, batch_size=64, shuffle=False, num_workers=0)
 
@@ -103,8 +100,7 @@ def eval_model(modelname, defect_type, device="cpu", save_plots=False, size=256,
             # create Training Dataset and Dataloader
             after_cutpaste_transform = transforms.Compose([])
             after_cutpaste_transform.transforms.append(transforms.ToTensor())
-            after_cutpaste_transform.transforms.append(transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                                                            std=[0.229, 0.224, 0.225]))
+            after_cutpaste_transform.transforms.append(transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
 
             train_transform = transforms.Compose([])
             #train_transform.transforms.append(transforms.RandomResizedCrop(size, scale=(min_scale,1)))
@@ -112,7 +108,7 @@ def eval_model(modelname, defect_type, device="cpu", save_plots=False, size=256,
             train_transform.transforms.append(CutPaste(transform=after_cutpaste_transform))
             # train_transform.transforms.append(transforms.ToTensor())
 
-            train_data = MVTecAT("Data", defect_type, transform=train_transform, size=size)
+            train_data = MVTecAT("data", defect_type, transform=train_transform, size=size)
             dataloader_train = DataLoader(train_data, batch_size=32,
                         shuffle=True, num_workers=8, collate_fn=cut_paste_collate_fn,
                         persistent_workers=True)
@@ -121,7 +117,7 @@ def eval_model(modelname, defect_type, device="cpu", save_plots=False, size=256,
             train_embeds = []
             with torch.no_grad():
                 for x1, x2 in dataloader_train:
-                    x = torch.cat([x1,x2], axis=0)
+                    x = torch.cat([x1, x2], axis=0)
                     embed, logit = model(x.to(device))
 
                     # generate labels:
