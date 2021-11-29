@@ -19,6 +19,7 @@ from model import ProjectionNet
 from eval import eval_model
 from utils import str2bool
 
+
 def run_training(data_type="screw",
                  model_dir="models",
                  epochs=256,
@@ -30,9 +31,9 @@ def run_training(data_type="screw",
                  batch_size=64,
                  head_layer=8,
                  cutpate_type=CutPasteNormal,
-                 device = "cuda",
+                 device ="cuda",
                  workers=8,
-                 size = 256):
+                 size=256):
     torch.multiprocessing.freeze_support()
     # TODO: use script params for hyperparameter
     # Temperature Hyperparameter currently not used
@@ -56,11 +57,11 @@ def run_training(data_type="screw",
     #train_transform.transforms.append(transforms.RandomResizedCrop(size, scale=(min_scale,1)))
     train_transform.transforms.append(transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1))
     # train_transform.transforms.append(transforms.GaussianBlur(int(size/10), sigma=(0.1,2.0)))
-    train_transform.transforms.append(transforms.Resize((size,size)))
-    train_transform.transforms.append(cutpate_type(transform = after_cutpaste_transform))
+    train_transform.transforms.append(transforms.Resize((size, size)))
+    train_transform.transforms.append(cutpate_type(transform=after_cutpaste_transform))
     # train_transform.transforms.append(transforms.ToTensor())
 
-    train_data = MVTecAT("Data", data_type, transform = train_transform, size=int(size * (1/min_scale)))
+    train_data = MVTecAT("Data", data_type, transform=train_transform, size=int(size * (1/min_scale)))
     dataloader = DataLoader(Repeat(train_data, 3000), batch_size=batch_size, drop_last=True,
                             shuffle=True, num_workers=workers, collate_fn=cut_paste_collate_fn,
                             persistent_workers=True, pin_memory=True, prefetch_factor=5)
@@ -94,7 +95,7 @@ def run_training(data_type="screw",
         while True:
             for out in enumerate(dataloader):
                 yield out
-    dataloader_inf =  get_data_inf()
+    dataloader_inf = get_data_inf()
     # From paper: "Note that, unlike conventional definition for an epoch,
     #              we define 256 parameter update steps as one epoch.
     for step in tqdm(range(epochs)):
@@ -124,7 +125,6 @@ def run_training(data_type="screw",
         y = torch.arange(len(xs), device=device)
         y = y.repeat_interleave(xs[0].size(0))
         loss = loss_fn(logits, y)
-        
 
         # regulize weights:
         loss.backward()
@@ -159,7 +159,7 @@ def run_training(data_type="screw",
             # batch_embeds = torch.cat(batch_embeds)
             # print(batch_embeds.shape)
             model.eval()
-            roc_auc= eval_model(model_name, data_type, device=device,
+            roc_auc = eval_model(model_name, data_type, device=device,
                                 save_plots=False,
                                 size=size,
                                 show_training_data=False,
@@ -167,52 +167,33 @@ def run_training(data_type="screw",
                                 #train_embed=batch_embeds)
             model.train()
             writer.add_scalar('eval_auc', roc_auc, step)
-
-
     torch.save(model.state_dict(), model_dir / f"{model_name}.tch")
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Training defect detection as described in the CutPaste Paper.')
     parser.add_argument('--type', default="all",
                         help='MVTec defection dataset type to train seperated by , (default: "all": train all defect types)')
 
-    parser.add_argument('--epochs', default=256, type=int,
-                        help='number of epochs to train the model , (default: 256)')
-    
-    parser.add_argument('--model_dir', default="models",
-                        help='output folder of the models , (default: models)')
-    
+    parser.add_argument('--epochs', default=256, type=int, help='number of epochs to train the model , (default: 256)')
+    parser.add_argument('--model_dir', default="models", help='output folder of the models , (default: models)')
     parser.add_argument('--no-pretrained', dest='pretrained', default=True, action='store_false',
                         help='use pretrained values to initalize ResNet18 , (default: True)')
-    
     parser.add_argument('--test_epochs', default=10, type=int,
-                        help='interval to calculate the auc during trainig, if -1 do not calculate test scores, (default: 10)')                  
-
-    parser.add_argument('--freeze_resnet', default=20, type=int,
-                        help='number of epochs to freeze resnet (default: 20)')
-    
-    parser.add_argument('--lr', default=0.03, type=float,
-                        help='learning rate (default: 0.03)')
-
-    parser.add_argument('--optim', default="sgd",
-                        help='optimizing algorithm values:[sgd, adam] (dafault: "sgd")')
-
+                        help='interval to calculate the auc during trainig, if -1 do not calculate test scores, (default: 10)')
+    parser.add_argument('--freeze_resnet', default=20, type=int, help='number of epochs to freeze resnet (default: 20)')
+    parser.add_argument('--lr', default=0.03, type=float, help='learning rate (default: 0.03)')
+    parser.add_argument('--optim', default="sgd", help='optimizing algorithm values:[sgd, adam] (dafault: "sgd")')
     parser.add_argument('--batch_size', default=64, type=int,
-                        help='batch size, real batchsize is depending on cut paste config normal cutaout has effective batchsize of 2x batchsize (dafault: "64")')   
-
+                        help='batch size, real batchsize is depending on cut paste config normal cutaout has effective batchsize of 2x batchsize (dafault: "64")')
     parser.add_argument('--head_layer', default=1, type=int,
                     help='number of layers in the projection head (default: 1)')
-    
     parser.add_argument('--variant', default="3way", choices=['normal', 'scar', '3way', 'union'], help='cutpaste variant to use (dafault: "3way")')
-    
-    parser.add_argument('--cuda', default=False, type=str2bool,
-                    help='use cuda for training (default: False)')
-    
+    parser.add_argument('--cuda', default=False, type=str2bool, help='use cuda for training (default: False)')
     parser.add_argument('--workers', default=8, type=int, help="number of workers to use for data loading (default:8)")
-
-
     args = parser.parse_args()
     print(args)
+
     all_types = ['bottle',
              'cable',
              'capsule',

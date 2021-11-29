@@ -3,6 +3,7 @@ from pathlib import Path
 from PIL import Image
 from joblib import Parallel, delayed
 
+
 class Repeat(Dataset):
     def __init__(self, org_dataset, new_length):
         self.org_dataset = org_dataset
@@ -15,9 +16,9 @@ class Repeat(Dataset):
     def __getitem__(self, idx):
         return self.org_dataset[idx % self.org_length]
 
+
 class MVTecAT(Dataset):
     """Face Landmarks dataset."""
-
     def __init__(self, root_dir, defect_name, size, transform=None, mode="train"):
         """
         Args:

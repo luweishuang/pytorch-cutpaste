@@ -3,6 +3,7 @@ import math
 from torchvision import transforms
 import torch 
 
+
 def cut_paste_collate_fn(batch):
     # cutPaste return 2 tuples of tuples we convert them into a list of tuples
     img_types = list(zip(*batch))
@@ -22,13 +23,15 @@ class CutPaste(object):
                                                       contrast = colorJitter,
                                                       saturation = colorJitter,
                                                       hue = colorJitter)
+            
     def __call__(self, org_img, img):
         # apply transforms to both images
         if self.transform:
             img = self.transform(img)
             org_img = self.transform(org_img)
         return org_img, img
-    
+
+
 class CutPasteNormal(CutPaste):
     """Randomly copy one patche from the image and paste it somewere else.
     Args:
@@ -76,6 +79,7 @@ class CutPasteNormal(CutPaste):
         
         return super().__call__(img, augmented)
 
+
 class CutPasteScar(CutPaste):
     """Randomly copy one patche from the image and paste it somewere else.
     Args:
@@ -121,7 +125,8 @@ class CutPasteScar(CutPaste):
         augmented.paste(patch, (to_location_w, to_location_h), mask=mask)
         
         return super().__call__(img, augmented)
-    
+
+
 class CutPasteUnion(object):
     def __init__(self, **kwags):
         self.normal = CutPasteNormal(**kwags)
@@ -133,6 +138,7 @@ class CutPasteUnion(object):
             return self.normal(img)
         else:
             return self.scar(img)
+
 
 class CutPaste3Way(object):
     def __init__(self, **kwags):
