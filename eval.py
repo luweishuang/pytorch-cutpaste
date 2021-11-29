@@ -51,7 +51,7 @@ def eval_model(modelname, defect_type, device="cpu", save_plots=False, size=256,
         test_transform.transforms.append(transforms.ToTensor())
         test_transform.transforms.append(transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                                             std=[0.229, 0.224, 0.225]))
-        test_data_eval = MVTecAT("Data", defect_type, size, transform = test_transform, mode="test")
+        test_data_eval = MVTecAT("data", defect_type, size, transform = test_transform, mode="test")
 
     dataloader_test = DataLoader(test_data_eval, batch_size=64, shuffle=False, num_workers=0)
 
