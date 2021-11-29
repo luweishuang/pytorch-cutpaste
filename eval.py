@@ -22,6 +22,7 @@ test_data_eval = None
 test_transform = None
 cached_type = None
 
+
 def get_train_embeds(model, size, defect_type, transform, device):
     # train data / train kde
     test_data = MVTecAT("Data", defect_type, size, transform=transform, mode="train")
@@ -37,6 +38,7 @@ def get_train_embeds(model, size, defect_type, transform, device):
     train_embed = torch.cat(train_embed)
     return train_embed
 
+
 def eval_model(modelname, defect_type, device="cpu", save_plots=False, size=256, show_training_data=True, model=None, train_embed=None, head_layer=8, density=GaussianDensityTorch()):
     # create test dataset
     global test_data_eval,test_transform, cached_type
@@ -51,8 +53,7 @@ def eval_model(modelname, defect_type, device="cpu", save_plots=False, size=256,
                                                             std=[0.229, 0.224, 0.225]))
         test_data_eval = MVTecAT("Data", defect_type, size, transform = test_transform, mode="test")
 
-    dataloader_test = DataLoader(test_data_eval, batch_size=64,
-                                    shuffle=False, num_workers=0)
+    dataloader_test = DataLoader(test_data_eval, batch_size=64, shuffle=False, num_workers=0)
 
     # create model
     if model is None:
@@ -152,13 +153,10 @@ def eval_model(modelname, defect_type, device="cpu", save_plots=False, size=256,
     #TODO: set threshold on mahalanobis distances and use "real" probabilities
 
     roc_auc = plot_roc(labels, distances, eval_dir / "roc_plot.png", modelname=modelname, save_plots=save_plots)
-    
-
     return roc_auc
     
 
 def plot_roc(labels, scores, filename, modelname="", save_plots=False):
-
     fpr, tpr, _ = roc_curve(labels, scores)
     roc_auc = auc(fpr, tpr)
 
@@ -178,8 +176,8 @@ def plot_roc(labels, scores, filename, modelname="", save_plots=False):
         # plt.show()
         plt.savefig(filename)
         plt.close()
-
     return roc_auc
+
 
 def plot_tsne(labels, embeds, filename):
     tsne = TSNE(n_components=2, verbose=1, perplexity=30, n_iter=500)
@@ -192,31 +190,23 @@ def plot_tsne(labels, embeds, filename):
     fig.savefig(filename)
     plt.close()
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='eval models')
     parser.add_argument('--type', default="all",
                         help='MVTec defection dataset type to train seperated by , (default: "all": train all defect types)')
-
     parser.add_argument('--model_dir', default="models",
                     help=' directory contating models to evaluate (default: models)')
-    
     parser.add_argument('--cuda', default=False, type=str2bool,
                     help='use cuda for model predictions (default: False)')
-
     parser.add_argument('--head_layer', default=8, type=int,
                     help='number of layers in the projection head (default: 8)')
-
     parser.add_argument('--density', default="torch", choices=["torch", "sklearn"],
                     help='density implementation to use. See `density.py` for both implementations. (default: torch)')
-
-    parser.add_argument('--save_plots', default=True, type=str2bool,
-                    help='save TSNE and roc plots')
-    
-
-    args = parser.parse_args()
-
+    parser.add_argument('--save_plots', default=True, type=str2bool, help='save TSNE and roc plots')
     args = parser.parse_args()
     print(args)
+
     all_types = ['bottle',
              'cable',
              'capsule',

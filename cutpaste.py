@@ -19,11 +19,11 @@ class CutPaste(object):
         if colorJitter is None:
             self.colorJitter = None
         else:
-            self.colorJitter = transforms.ColorJitter(brightness = colorJitter,
-                                                      contrast = colorJitter,
-                                                      saturation = colorJitter,
-                                                      hue = colorJitter)
-            
+            self.colorJitter = transforms.ColorJitter(brightness=colorJitter,
+                                                      contrast=colorJitter,
+                                                      saturation=colorJitter,
+                                                      hue=colorJitter)
+
     def __call__(self, org_img, img):
         # apply transforms to both images
         if self.transform:
@@ -38,7 +38,7 @@ class CutPasteNormal(CutPaste):
         area_ratio (list): list with 2 floats for maximum and minimum area to cut out
         aspect_ratio (float): minimum area ration. Ration is sampled between aspect_ratio and 1/aspect_ratio.
     """
-    def __init__(self, area_ratio=[0.02,0.15], aspect_ratio=0.3, **kwags):
+    def __init__(self, area_ratio=[0.02, 0.15], aspect_ratio=0.3, **kwags):
         super(CutPasteNormal, self).__init__(**kwags)
         self.area_ratio = area_ratio
         self.aspect_ratio = aspect_ratio
@@ -112,7 +112,7 @@ class CutPasteScar(CutPaste):
 
         # rotate
         rot_deg = random.uniform(*self.rotation)
-        patch = patch.convert("RGBA").rotate(rot_deg,expand=True)
+        patch = patch.convert("RGBA").rotate(rot_deg, expand=True)
         
         #paste
         to_location_h = int(random.uniform(0, h - patch.size[0]))
